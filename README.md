@@ -7,6 +7,11 @@ Tyrbine is a single-sided liquidity protocol on Solana.
 Users can deposit a single asset into vaults and earn trading fees **without impermanent loss**.  
 
 Key features include:  
-- **Dynamic fees** that adjust based on vault liquidity, rewarding deposits to deficit vaults and discouraging withdrawals.  
-- **Slippage-free swaps** using Pyth price oracles for fair pricing.  
-- **Secure vaults** with internal reserves and circuit breakers to protect liquidity providers. 
+- **Phase Switch**
+Incentivizes traders to rebalance liquidity by depositing into deficit vaults and withdrawing from surplus vaults, offering the best rates available across the Solana ecosystem.
+
+- **Slippage-Free Swaps**
+Swaps are powered by Pyth price oracles, ensuring accurate and transparent pricing with zero traditional slippage.
+
+- **Secure Vaults**
+Vaults are protected by internal reserves and automated circuit breakers, shielding liquidity providers from volatility and potential exploits
