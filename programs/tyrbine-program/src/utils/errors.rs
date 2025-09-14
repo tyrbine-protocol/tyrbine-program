@@ -59,4 +59,13 @@ pub enum TyrbineError {
 
     #[msg("Switch in Off mode")]
     SwitchOff,
+
+    #[msg("Overflow in pow")]
+    OverflowInPow,
+
+    #[msg("Overflow in mul")]
+    OverflowInMul,
+
+    #[msg("Overflow in div")]
+    OverflowInDiv
 }

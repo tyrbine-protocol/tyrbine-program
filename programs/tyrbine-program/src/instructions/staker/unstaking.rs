@@ -4,7 +4,7 @@ use crate::{components::{calculating_yield, check_stoptap}, states::{Pool, Stake
 
 #[inline(never)]
 pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Result<()> {
-    // Check Stoptap
+
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
 
     let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield;
@@ -23,7 +23,6 @@ pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Res
     msg!("Staker Pending Claim After: {}", ctx.accounts.staker_pda.pending_claim);
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield;
     
-    // Burn LP
     let cpi_accounts = Burn {
         mint: ctx.accounts.lp_mint.to_account_info(),
         from: ctx.accounts.signer_lp_ata.to_account_info(),
@@ -36,7 +35,6 @@ pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Res
     
     burn(cpi_ctx, amount)?;
 
-    // Transfer from Treasury to Signer
     let seeds = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
     let signer_seeds = &[&seeds[..]];
 

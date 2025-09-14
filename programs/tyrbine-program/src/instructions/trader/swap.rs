@@ -2,14 +2,14 @@ use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
-use crate::{components::{check_stoptap, fee, switch}, states::{Pool, Treasury}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
+use crate::{components::{amount_out, check_stoptap, fee, switch}, states::{Pool, Treasury}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
 
 pub fn swap(
     ctx: Context<SwapInstructionAccounts>,
     amount_in: u64,
     partner_fee: u64,
 ) -> Result<()> {
-    // Check Stoptap
+
     check_stoptap(&ctx.accounts.vault_pda_in, &ctx.accounts.treasury_pda)?;
     check_stoptap(&ctx.accounts.vault_pda_out, &ctx.accounts.treasury_pda)?;
 
@@ -38,18 +38,9 @@ pub fn swap(
     let token_a_decimals = ctx.accounts.mint_in.decimals;
     let token_b_decimals = ctx.accounts.mint_out.decimals;
 
-    let decimals_adjustment = 10u128.pow(token_b_decimals as u32) / 10u128.pow(token_a_decimals as u32);
+    let token_b_out = amount_out(amount_in, token_a_decimals, token_b_decimals, price_a, price_b)?;
 
-    // Raw amount out (before fees)
-    let amount_out = (amount_in as u128)
-        .checked_mul(price_a as u128)
-        .unwrap()
-        .checked_div(price_b as u128)
-        .unwrap()
-        .checked_mul(decimals_adjustment)
-        .unwrap() as u64;
-
-    let (after_fee, lp_fee, protocol_fee, partner_fee) = fee(amount_out, vault_b.base_fee, 1, partner_fee);
+    let (after_fee, lp_fee, protocol_fee, partner_fee) = fee(token_b_out, vault_b.base_fee, 1, partner_fee);
     
     msg!("Amount In: {}", amount_in);
     msg!("Amount Out: {}", after_fee);
@@ -57,11 +48,10 @@ pub fn swap(
     msg!("Partner Fee: {}", partner_fee);
 
     vault_a.current_liquidity += amount_in;
-    vault_b.current_liquidity -= after_fee + protocol_fee;
+    vault_b.current_liquidity -= after_fee;
 
     vault_b.cumulative_yield += lp_fee;
 
-    // Transfer from Signer to Treasury
     let cpi_accounts = token::Transfer {
         from: ctx.accounts.signer_ata_in.to_account_info(),
         to: ctx.accounts.treasury_ata_in.to_account_info(),
@@ -70,7 +60,6 @@ pub fn swap(
 
     token::transfer(CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts), amount_in)?;
     
-    // Transfer from Treasury to Signer
     let seeds = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
     let signer_seeds = &[&seeds[..]];
 
