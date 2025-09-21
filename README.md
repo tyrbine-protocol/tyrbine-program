@@ -6,7 +6,7 @@ Single-sided liquidity protocol
 Tyrbine is a single-sided liquidity protocol on Solana.  
 Users can deposit a single asset into vaults and earn trading fees **without impermanent loss**.
 
->  The idea is to join the existing flow of liquidity on Solana and extract yield from it
+> The idea is to join the existing flow of liquidity on Solana and extract yield from it
 
 Key features include:  
 - **Phase Switch**
