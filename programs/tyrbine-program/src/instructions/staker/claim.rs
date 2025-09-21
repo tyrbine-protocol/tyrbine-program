@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
-use crate::{components::{calculating_yield, check_stoptap}, states::{Pool, Staker, Treasury}, utils::{MINT_SEED, VAULT_SEED, STAKER_SEED, TREASURY_SEED, TYRBINE_SEED}};
+use crate::{components::{calculating_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::{MINT_SEED, VAULT_SEED, STAKER_SEED, TREASURY_SEED, TYRBINE_SEED}};
 
 
 pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
@@ -12,12 +12,6 @@ pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
     let last_cumulative_yield = ctx.accounts.staker_pda.last_cumulative_yield;
     let pending_claim = ctx.accounts.staker_pda.pending_claim;
-    
-    msg!("Vault Cum Yield: {}", cumulative_yield);
-    msg!("Vault Total LP: {}", total_lp);
-    msg!("Staker LP: {}", staker_lp);
-    msg!("Staker Last Cum Yield: {}", last_cumulative_yield);
-    msg!("Staker Pending Claim: {}", pending_claim);
 
     let staker_yield = calculating_yield(cumulative_yield, total_lp, staker_lp, last_cumulative_yield);
     let amount = staker_yield + ctx.accounts.staker_pda.pending_claim;
@@ -41,6 +35,12 @@ pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
 
     ctx.accounts.staker_pda.pending_claim = 0;
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield;
+
+    msg!("Vault Cum Yield: {}", cumulative_yield);
+    msg!("Vault Total LP: {}", total_lp);
+    msg!("Staker LP: {}", staker_lp);
+    msg!("Staker Last Cum Yield: {}", cumulative_yield);
+    msg!("Staker Pending Claim: {}", pending_claim);
 
     Ok(())
 }
@@ -76,7 +76,7 @@ pub struct ClaimInstructionAccounts<'info> {
     pub staker_pda: Account<'info, Staker>,
 
     #[account(mut, seeds = [VAULT_SEED.as_bytes(), vault_mint.key().as_ref()], bump)]
-    pub vault_pda: Account<'info, Pool>,
+    pub vault_pda: Account<'info, Vault>,
 
     #[account(mut, seeds = [TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes()], bump)]
     pub treasury_pda: Account<'info, Treasury>,

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{states::{Pool, Treasury}, utils::TyrbineError};
+use crate::{states::{Vault, Treasury}, utils::TyrbineError};
 
 pub fn check_admin(treasury_pda: &Treasury, signer: &Signer) -> Result<()> {
     if signer.key() != treasury_pda.admin {
@@ -9,7 +9,7 @@ pub fn check_admin(treasury_pda: &Treasury, signer: &Signer) -> Result<()> {
     Ok(())
 }
 
-pub fn check_stoptap(pool: &Pool, treasury_pda: &Treasury) -> Result<()> {
+pub fn check_stoptap(pool: &Vault, treasury_pda: &Treasury) -> Result<()> {
     if !pool.is_active {
         return Err(TyrbineError::StoptapActivated.into());
     }

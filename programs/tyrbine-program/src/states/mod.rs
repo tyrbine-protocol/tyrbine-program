@@ -1,7 +1,7 @@
 pub use treasury::*;
-pub use pool::*;
+pub use vault::*;
 pub use staker::*;
 
 pub mod treasury;
-pub mod pool;
+pub mod vault;
 pub mod staker;

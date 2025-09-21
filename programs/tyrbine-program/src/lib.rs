@@ -10,7 +10,7 @@ pub mod components;
 pub mod utils;
 
 
-declare_id!("GeKMk3yJVYn23VET9HdHeP89kovTseARihBYjjFVaiu1");
+declare_id!("5K81k1HHwdN3CD4cVMqXBDZ1PEjjQXswD3oYYx5SVCwz");
 
 #[program]
 pub mod tyrbine_program {

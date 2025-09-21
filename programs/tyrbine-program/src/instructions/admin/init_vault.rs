@@ -1,4 +1,4 @@
-use crate::{components::check_admin, states::{Pool, Treasury}, utils::*};
+use crate::{components::check_admin, states::{Vault, Treasury}, utils::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
@@ -51,7 +51,7 @@ pub struct InitVaultInstructionAccounts<'info> {
         bump,
         space = 8 + 1 + 8 + 32 + 32 + 32 + 8 + 8 + 8,
     )]
-    pub vault_pda: Account<'info, Pool>,
+    pub vault_pda: Account<'info, Vault>,
 
     #[account(mut, seeds = [TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes()], bump)]
     pub treasury_pda: Account<'info, Treasury>,

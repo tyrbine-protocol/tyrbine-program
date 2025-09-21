@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, burn, Burn, Mint, Token, TokenAccount, Transfer}};
-use crate::{components::{calculating_yield, check_stoptap}, states::{Pool, Staker, Treasury}, utils::*};
+use crate::{components::{calculating_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::*};
 
 #[inline(never)]
 pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Result<()> {
@@ -75,7 +75,7 @@ pub struct UnstakingInstructionAccounts<'info> {
     pub signer_lp_ata: Account<'info, TokenAccount>,
 
     #[account(mut, seeds = [VAULT_SEED.as_bytes(), &token_mint.to_account_info().key.to_bytes()], bump)]
-    pub vault_pda: Account<'info, Pool>,
+    pub vault_pda: Account<'info, Vault>,
 
     #[account(mut, seeds = [STAKER_SEED.as_bytes(), vault_pda.key().as_ref(), signer.key().as_ref()], bump)]
     pub staker_pda: Account<'info, Staker>,

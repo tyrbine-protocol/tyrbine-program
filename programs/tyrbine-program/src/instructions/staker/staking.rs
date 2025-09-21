@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, MintTo, Token, TokenAccount}};
-use crate::{components::{calculating_yield, check_stoptap}, states::{Pool, Staker, Treasury}, utils::*};
+use crate::{components::{calculating_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::*};
 
 #[inline(never)]
 pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<()> {
@@ -18,6 +18,9 @@ pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<
     msg!("Staker LP: {}", staker_lp);
     msg!("Staker Last Cum Yield: {}", last_cumulative_yield);
     msg!("Staker Pending Claim Before: {}", pending_claim);
+
+    ctx.accounts.staker_pda.owner = ctx.accounts.signer.key();
+    ctx.accounts.staker_pda.vault = ctx.accounts.vault_mint.key();
 
     ctx.accounts.staker_pda.pending_claim += calculating_yield(cumulative_yield, total_lp, staker_lp, last_cumulative_yield);
     msg!("Staker Pending Claim After: {}", ctx.accounts.staker_pda.pending_claim);
@@ -76,14 +79,14 @@ pub struct StakingInstructionAccounts<'info> {
     pub signer_lp_ata: Account<'info, TokenAccount>,
 
     #[account(mut, seeds = [VAULT_SEED.as_bytes(), &vault_mint.to_account_info().key.to_bytes()], bump)]
-    pub vault_pda: Account<'info, Pool>,
+    pub vault_pda: Account<'info, Vault>,
 
     #[account(
         init_if_needed,
         payer = signer,
         seeds = [STAKER_SEED.as_bytes(), vault_pda.key().as_ref(), signer.key().as_ref()],
         bump,
-        space = 8 + 8 + 8,
+        space = 8 + 32 + 32 + 8 + 8,
     )]
     pub staker_pda: Account<'info, Staker>,
 

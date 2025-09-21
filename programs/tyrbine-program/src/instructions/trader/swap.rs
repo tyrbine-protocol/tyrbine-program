@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
-use crate::{components::{amount_out, check_stoptap, fee, switch}, states::{Pool, Treasury}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
+use crate::{components::{amount_out, check_stoptap, fee}, states::{Vault, Treasury}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
 
 pub fn swap(
     ctx: Context<SwapInstructionAccounts>,
@@ -19,7 +19,9 @@ pub fn swap(
     let delta_a = vault_a.initial_liquidity as i64 - vault_a.current_liquidity as i64;
     let delta_b = vault_b.initial_liquidity as i64 - vault_b.current_liquidity as i64;
 
-    let _ = switch(delta_a, delta_b);
+    if delta_a < delta_b {
+        return Err(TyrbineError::SwitchOff.into());
+    }
 
     if ctx.accounts.pyth_price_account_in.key() != vault_a.pyth_price_account {
         return Err(TyrbineError::InvalidPythAccount.into());
@@ -44,7 +46,8 @@ pub fn swap(
     
     msg!("Amount In: {}", amount_in);
     msg!("Amount Out: {}", after_fee);
-    msg!("LP fee: {}", lp_fee);
+    msg!("LP Fee: {}", lp_fee);
+    msg!("Protocol Fee: {}", protocol_fee);
     msg!("Partner Fee: {}", partner_fee);
 
     vault_a.current_liquidity += amount_in;
@@ -129,11 +132,11 @@ pub struct SwapInstructionAccounts<'info> {
 
     /// CHECK:
     #[account(mut, seeds = [VAULT_SEED.as_bytes(), mint_in.key().as_ref()], bump)]
-    pub vault_pda_in: Account<'info, Pool>,
+    pub vault_pda_in: Account<'info, Vault>,
 
     /// CHECK:
     #[account(mut, seeds = [VAULT_SEED.as_bytes(), mint_out.key().as_ref()], bump)]
-    pub vault_pda_out: Account<'info, Pool>,
+    pub vault_pda_out: Account<'info, Vault>,
 
     #[account(mut, seeds = [TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes()], bump)]
     pub treasury_pda: Account<'info, Treasury>,

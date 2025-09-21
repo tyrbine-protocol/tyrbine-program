@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[account]
-pub struct Pool {
+pub struct Vault {
     pub is_active: bool,
     pub base_fee: u64, // scale 1:FEE_SCALE
     pub token_mint: Pubkey,
