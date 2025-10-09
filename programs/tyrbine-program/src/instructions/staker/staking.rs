@@ -64,7 +64,13 @@ pub struct StakingInstructionAccounts<'info> {
     #[account(mut)]
     pub vault_mint: Account<'info, Mint>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [MINT_SEED.as_bytes(), vault_pda.key().as_ref()], 
+        bump,
+        mint::authority = treasury_pda.key(),
+        mint::freeze_authority = treasury_pda.key()
+    )]
     pub lp_mint: Account<'info, Mint>,
 
     #[account(mut, token::authority = signer, token::mint = vault_mint)]
