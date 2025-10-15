@@ -1,7 +1,7 @@
-pub fn fee(amount_out: u64, fee: u64, protocol_fee: u64, partner_fee: u64) -> (u64, u64, u64, u64) {
+pub fn calculate_fee_amount(amount_out: u64, fee: u64, protocol_fee: u64, partner_fee: u64) -> (u64, u64, u64, u64) {
 
     let total_fee = amount_out
-        .checked_mul(fee)   // e.g., 10 bps
+        .checked_mul(fee) 
         .unwrap()
         .checked_div(10_000)
         .unwrap();

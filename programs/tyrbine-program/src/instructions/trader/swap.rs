@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
-use crate::{components::{amount_out, check_stoptap, fee}, states::{Vault, Treasury}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
+use crate::{components::{raw_amount_out, fees_setting, check_stoptap, calculate_fee_amount}, states::{Treasury, Vault}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
 
 pub fn swap(
     ctx: Context<SwapInstructionAccounts>,
@@ -16,12 +16,7 @@ pub fn swap(
     let vault_a = &mut ctx.accounts.vault_pda_in;
     let vault_b = &mut ctx.accounts.vault_pda_out;
 
-    let delta_a = vault_a.initial_liquidity as i64 - vault_a.current_liquidity as i64;
     let delta_b = vault_b.initial_liquidity as i64 - vault_b.current_liquidity as i64;
-
-    if delta_a < delta_b {
-        return Err(TyrbineError::SwitchOff.into());
-    }
 
     if ctx.accounts.pyth_price_account_in.key() != vault_a.pyth_price_account {
         return Err(TyrbineError::InvalidPythAccount.into());
@@ -40,9 +35,16 @@ pub fn swap(
     let token_a_decimals = ctx.accounts.mint_in.decimals;
     let token_b_decimals = ctx.accounts.mint_out.decimals;
 
-    let token_b_out = amount_out(amount_in, token_a_decimals, token_b_decimals, price_a, price_b)?;
+    let token_b_out = raw_amount_out(amount_in, token_a_decimals, token_b_decimals, price_a, price_b)?;
 
-    let (after_fee, lp_fee, protocol_fee, partner_fee) = fee(token_b_out, vault_b.base_fee, 1, partner_fee);
+    let mut swap_fee = vault_b.base_fee;
+    let mut proto_fee = 1;
+    if delta_b < 0 {
+        let fee = fees_setting(vault_b.initial_liquidity, vault_b.current_liquidity, vault_b.base_fee);
+        swap_fee = fee.0;
+        proto_fee = fee.1;
+    }
+    let (after_fee, lp_fee, protocol_fee, partner_fee) = calculate_fee_amount(token_b_out, swap_fee, proto_fee, partner_fee);
     
     msg!("Amount In: {}", amount_in);
     msg!("Amount Out: {}", after_fee);
@@ -113,10 +115,10 @@ pub struct SwapInstructionAccounts<'info> {
     /// CHECK:
     pub mint_out: Account<'info, Mint>,
 
-    /// CHECK: pool_pda.pyth
+    /// CHECK: pyth_price_account_in
     pub pyth_price_account_in: Account<'info, PriceUpdateV2>,
 
-    /// CHECK: pool_pda.pyth
+    /// CHECK: pyth_price_account_out
     pub pyth_price_account_out: Account<'info, PriceUpdateV2>,
 
     #[account(mut, token::authority = signer, token::mint = mint_in)]

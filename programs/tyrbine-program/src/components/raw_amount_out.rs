@@ -1,6 +1,6 @@
 use crate::utils::TyrbineError;
 
-pub fn amount_out(amount_in: u64, decimals_in: u8, decimals_out: u8, price_in: u64, price_out: u64) -> Result<u64, TyrbineError> {
+pub fn raw_amount_out(amount_in: u64, decimals_in: u8, decimals_out: u8, price_in: u64, price_out: u64) -> Result<u64, TyrbineError> {
     
     let decimals_diff = decimals_out as i32 - decimals_in as i32;
 
@@ -12,11 +12,11 @@ pub fn amount_out(amount_in: u64, decimals_in: u8, decimals_out: u8, price_in: u
         amount_in.checked_div(_scale).ok_or(TyrbineError::OverflowInDiv)?
     };
 
-    let amount_out = adjusted_amount_in
+    let raw_amount_out = adjusted_amount_in
         .checked_mul(price_in)
         .ok_or(TyrbineError::OverflowInMul)?
         .checked_div(price_out)
         .ok_or(TyrbineError::OverflowInDiv)?;
 
-    Ok(amount_out)
+    Ok(raw_amount_out)
 }

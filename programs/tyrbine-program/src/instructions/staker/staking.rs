@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, MintTo, Token, TokenAccount}};
-use crate::{components::{calculating_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::*};
+use crate::{components::{calculate_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::*};
 
 #[inline(never)]
 pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<()> {
@@ -22,7 +22,7 @@ pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<
     ctx.accounts.staker_pda.owner = ctx.accounts.signer.key();
     ctx.accounts.staker_pda.vault = ctx.accounts.vault_mint.key();
 
-    ctx.accounts.staker_pda.pending_claim += calculating_yield(cumulative_yield, total_lp, staker_lp, last_cumulative_yield);
+    ctx.accounts.staker_pda.pending_claim += calculate_yield(cumulative_yield, total_lp, staker_lp, last_cumulative_yield);
     msg!("Staker Pending Claim After: {}", ctx.accounts.staker_pda.pending_claim);
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield;
 

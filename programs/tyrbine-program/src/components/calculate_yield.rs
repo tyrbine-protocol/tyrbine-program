@@ -1,4 +1,4 @@
-pub fn calculating_yield(
+pub fn calculate_yield(
     cumulative_yield: u64,
     total_lp: u64,
     staker_lp_balance: u64,
