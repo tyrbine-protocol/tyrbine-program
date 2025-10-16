@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
-use crate::{components::{raw_amount_out, fees_setting, check_stoptap, calculate_fee_amount}, states::{Treasury, Vault}, utils::{TyrbineError, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
+use crate::{components::{calculate_fee_amount, check_stoptap, fees_setting, raw_amount_out}, states::{Treasury, Vault}, utils::{TyrbineError, SCALE, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
 
 pub fn swap(
     ctx: Context<SwapInstructionAccounts>,
@@ -54,8 +54,8 @@ pub fn swap(
 
     vault_a.current_liquidity += amount_in;
     vault_b.current_liquidity -= after_fee;
-
-    vault_b.cumulative_yield += lp_fee;
+    
+    vault_b.cumulative_yield_per_lp += (lp_fee as u128 * SCALE) / vault_b.initial_liquidity as u128;
 
     let cpi_accounts = token::Transfer {
         from: ctx.accounts.signer_ata_in.to_account_info(),

@@ -18,7 +18,7 @@ pub fn init_vault(
     ctx.accounts.vault_pda.lp_mint = ctx.accounts.lp_mint.key();
     ctx.accounts.vault_pda.initial_liquidity = 0;
     ctx.accounts.vault_pda.current_liquidity = 0;
-    ctx.accounts.vault_pda.cumulative_yield = 0;
+    ctx.accounts.vault_pda.cumulative_yield_per_lp = 0;
 
     Ok(())
 }
@@ -49,7 +49,7 @@ pub struct InitVaultInstructionAccounts<'info> {
         payer = signer,
         seeds = [VAULT_SEED.as_bytes(), vault_mint.key().as_ref()],
         bump,
-        space = 8 + 1 + 8 + 32 + 32 + 32 + 8 + 8 + 8,
+        space = 8 + 1 + 8 + 32 + 32 + 32 + 8 + 8 + 16,
     )]
     pub vault_pda: Account<'info, Vault>,
 

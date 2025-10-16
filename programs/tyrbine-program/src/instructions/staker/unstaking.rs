@@ -7,7 +7,7 @@ pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Res
 
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
 
-    let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield;
+    let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield_per_lp;
     let total_lp = ctx.accounts.vault_pda.initial_liquidity;
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
     let last_cumulative_yield = ctx.accounts.staker_pda.last_cumulative_yield;
@@ -19,7 +19,7 @@ pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Res
     msg!("Staker Last Cum Yield: {}", last_cumulative_yield);
     msg!("Staker Pending Claim Before: {}", pending_claim);
 
-    ctx.accounts.staker_pda.pending_claim += calculate_yield(cumulative_yield, total_lp, staker_lp, last_cumulative_yield);
+    ctx.accounts.staker_pda.pending_claim += calculate_yield(cumulative_yield, staker_lp, last_cumulative_yield);
     msg!("Staker Pending Claim After: {}", ctx.accounts.staker_pda.pending_claim);
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield;
     

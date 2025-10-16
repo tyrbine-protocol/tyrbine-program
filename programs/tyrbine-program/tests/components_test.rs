@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tyrbine {
 
-    use tyrbine_program::components::{calculate_fee_amount, calculate_yield, fees_setting, raw_amount_out};
+    use tyrbine_program::{components::{calculate_fee_amount, calculate_yield, fees_setting, raw_amount_out}, utils::SCALE};
     
 
 #[test]
@@ -24,13 +24,22 @@ fn calculating_fee_amount() {
 }
 
 #[test]
-fn calculating_yield() {
-    let cumulative_yield: u64 = 1000000; 
-    let total_lp = 1000000;
-    let staker_lp_balance = 100000;
-    let last_cumulative_yield = 0;
+fn calculating_yield_per_lp() {
+    let lp_fee: u128 = 39960; 
+    let total_lp: u64 = 2000000000000;
 
-    let yield_amount = calculate_yield(cumulative_yield, total_lp, staker_lp_balance, last_cumulative_yield);
+    let cumulative_yield_per_lp = (lp_fee as u128 * SCALE) / total_lp as u128;
+
+    println!("Cum Yield Per Lp: {}", cumulative_yield_per_lp);
+}
+
+#[test]
+fn calculating_yield() {
+    let cumulative_yield_per_lp: u128 = 1998; 
+    let staker_lp_balance = 2000000000;
+    let last_cumulative_yield: u128 = 0;
+
+    let yield_amount = calculate_yield(cumulative_yield_per_lp, staker_lp_balance, last_cumulative_yield);
 
     println!("Yield: {}", yield_amount);
 }

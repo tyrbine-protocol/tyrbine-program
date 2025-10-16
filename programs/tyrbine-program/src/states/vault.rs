@@ -12,5 +12,5 @@ pub struct Vault {
     pub initial_liquidity: u64,
     pub current_liquidity: u64,
     
-    pub cumulative_yield: u64, // scale 1:SPICE_SCALE
+    pub cumulative_yield_per_lp: u128, // scale 1:SPICE_SCALE
 }

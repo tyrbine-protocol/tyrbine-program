@@ -7,7 +7,7 @@ pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<
 
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
 
-    let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield;
+    let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield_per_lp;
     let total_lp = ctx.accounts.vault_pda.initial_liquidity;
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
     let last_cumulative_yield = ctx.accounts.staker_pda.last_cumulative_yield;
@@ -22,7 +22,7 @@ pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<
     ctx.accounts.staker_pda.owner = ctx.accounts.signer.key();
     ctx.accounts.staker_pda.vault = ctx.accounts.vault_mint.key();
 
-    ctx.accounts.staker_pda.pending_claim += calculate_yield(cumulative_yield, total_lp, staker_lp, last_cumulative_yield);
+    ctx.accounts.staker_pda.pending_claim += calculate_yield(cumulative_yield, staker_lp, last_cumulative_yield);
     msg!("Staker Pending Claim After: {}", ctx.accounts.staker_pda.pending_claim);
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield;
 
@@ -92,7 +92,7 @@ pub struct StakingInstructionAccounts<'info> {
         payer = signer,
         seeds = [STAKER_SEED.as_bytes(), vault_pda.key().as_ref(), signer.key().as_ref()],
         bump,
-        space = 8 + 32 + 32 + 8 + 8,
+        space = 8 + 32 + 32 + 16 + 8,
     )]
     pub staker_pda: Account<'info, Staker>,
 
