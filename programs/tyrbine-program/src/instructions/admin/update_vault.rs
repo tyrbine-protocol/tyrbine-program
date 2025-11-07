@@ -7,12 +7,14 @@ pub fn update_vault(
     ctx: Context<UpdatePoolInstructionAccounts>,
     is_active: bool,
     base_fee: u64,
+    max_age_price: u64
 ) -> Result<()> {
     check_admin(&ctx.accounts.treasury_pda, &ctx.accounts.signer)?;
 
     ctx.accounts.vault_pda.base_fee = base_fee;
     ctx.accounts.vault_pda.is_active = is_active;
     ctx.accounts.vault_pda.pyth_price_account = ctx.accounts.pyth_price_account.key();
+    ctx.accounts.vault_pda.max_age_price = max_age_price;
 
     Ok(())
 }

@@ -7,6 +7,7 @@ pub struct Vault {
     pub token_mint: Pubkey,
 
     pub pyth_price_account: Pubkey,
+    pub max_age_price: u64,
 
     pub lp_mint: Pubkey,
     pub initial_liquidity: u64,

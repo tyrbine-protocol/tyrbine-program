@@ -8,6 +8,7 @@ pub fn init_vault(
     ctx: Context<InitVaultInstructionAccounts>,
     is_active: bool,
     base_fee: u64,
+    max_age_price: u64
 ) -> Result<()> {
     check_admin(&ctx.accounts.treasury_pda, &ctx.accounts.signer)?;
 
@@ -15,6 +16,7 @@ pub fn init_vault(
     ctx.accounts.vault_pda.base_fee = base_fee;
     ctx.accounts.vault_pda.token_mint = ctx.accounts.vault_mint.key();
     ctx.accounts.vault_pda.pyth_price_account = ctx.accounts.pyth_price_account.key();
+    ctx.accounts.vault_pda.max_age_price = max_age_price;
     ctx.accounts.vault_pda.lp_mint = ctx.accounts.lp_mint.key();
     ctx.accounts.vault_pda.initial_liquidity = 0;
     ctx.accounts.vault_pda.current_liquidity = 0;
@@ -50,7 +52,7 @@ pub struct InitVaultInstructionAccounts<'info> {
         payer = signer,
         seeds = [VAULT_SEED.as_bytes(), vault_mint.key().as_ref()],
         bump,
-        space = 8 + 1 + 8 + 32 + 32 + 32 + 8 + 8 + 16 + 8,
+        space = 8 + 1 + 8 + 32 + 32 + 8 + 32 + 8 + 8 + 16 + 8,
     )]
     pub vault_pda: Account<'info, Vault>,
 

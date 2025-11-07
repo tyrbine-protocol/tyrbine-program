@@ -13,11 +13,11 @@ pub fn swap(
     check_stoptap(&ctx.accounts.vault_pda_in, &ctx.accounts.treasury_pda)?;
     check_stoptap(&ctx.accounts.vault_pda_out, &ctx.accounts.treasury_pda)?;
 
-    let vault_in = &mut ctx.accounts.vault_pda_in;
-    let vault_out = &mut ctx.accounts.vault_pda_out;
+    let vault_in: &mut Account<'_, Vault> = &mut ctx.accounts.vault_pda_in;
+    let vault_out: &mut Account<'_, Vault> = &mut ctx.accounts.vault_pda_out;
 
-    let delta_in = vault_in.current_liquidity as i64 - vault_in.initial_liquidity as i64;
-    let delta_out = vault_out.current_liquidity as i64 - vault_out.initial_liquidity as i64;
+    let delta_in: i64 = vault_in.current_liquidity as i64 - vault_in.initial_liquidity as i64;
+    let delta_out: i64 = vault_out.current_liquidity as i64 - vault_out.initial_liquidity as i64;
 
     if ctx.accounts.pyth_price_account_in.key() != vault_in.pyth_price_account {
         return Err(TyrbineError::InvalidPythAccount.into());
@@ -27,32 +27,37 @@ pub fn swap(
         return Err(TyrbineError::InvalidPythAccount.into());
     }
 
-    let price_in = ctx.accounts.pyth_price_account_in.price_message.price as u64;
-    let price_out = ctx.accounts.pyth_price_account_out.price_message.price as u64;
+    let price_in: u64 = ctx.accounts.pyth_price_account_in.price_message.price as u64;
+    let price_out: u64 = ctx.accounts.pyth_price_account_out.price_message.price as u64;
     
-    // get current time
-    let clock = Clock::get()?;
-    let current_timestamp = clock.unix_timestamp;
-    let assert_price_freshness = current_timestamp - ctx.accounts.pyth_price_account_in.price_message.publish_time;
-    if  assert_price_freshness > 3 {
-        msg!("Price feed stale by {} seconds", assert_price_freshness);
+    let clock: Clock = Clock::get()?;
+    let current_timestamp: i64 = clock.unix_timestamp;
+
+    let max_age_vault_in: i64 = current_timestamp - ctx.accounts.pyth_price_account_in.price_message.publish_time;
+    let max_age_vault_out: i64 = current_timestamp - ctx.accounts.pyth_price_account_out.price_message.publish_time;
+
+    if  max_age_vault_in > vault_in.max_age_price as i64 {
+        msg!("Vault In: Price feed stale by {} seconds", max_age_vault_in);
         return Err(TyrbineError::OracleDataTooOld.into());
     }
 
-    msg!("Price Freshness: {} seconds", assert_price_freshness);
+    if  max_age_vault_out > vault_out.max_age_price as i64 {
+        msg!("Vault Out: Price feed stale by {} seconds", max_age_vault_out);
+        return Err(TyrbineError::OracleDataTooOld.into());
+    }
 
     msg!("Token In price: {}", price_in);
     msg!("Token Out price: {}", price_out);
 
-    let token_in_decimals = ctx.accounts.mint_in.decimals;
-    let token_out_decimals = ctx.accounts.mint_out.decimals;
+    let token_in_decimals: u8 = ctx.accounts.mint_in.decimals;
+    let token_out_decimals: u8 = ctx.accounts.mint_out.decimals;
 
-    let token_raw_amount_out = raw_amount_out(amount_in, token_in_decimals, token_out_decimals, price_in, price_out)?;
+    let token_raw_amount_out: u64 = raw_amount_out(amount_in, token_in_decimals, token_out_decimals, price_in, price_out)?;
 
-    let mut swap_fee_bps = vault_out.base_fee;
-    let mut protocol_fee_bps = ctx.accounts.treasury_pda.proto_fee;
+    let mut swap_fee_bps: u64 = vault_out.base_fee;
+    let mut protocol_fee_bps: u64 = ctx.accounts.treasury_pda.proto_fee;
     if delta_in > delta_out {
-        let fee = fees_setting(vault_out.initial_liquidity, vault_out.current_liquidity, vault_out.base_fee, protocol_fee_bps);
+        let fee: (u64, u64) = fees_setting(vault_out.initial_liquidity, vault_out.current_liquidity, vault_out.base_fee, protocol_fee_bps);
         swap_fee_bps = fee.0;
         protocol_fee_bps = fee.1;
         msg!("Increased Fee");
@@ -75,7 +80,7 @@ pub fn swap(
     vault_out.cumulative_yield_per_lp += (lp_fee as u128 * SCALE) / vault_out.initial_liquidity as u128;
     vault_out.protocol_yield += protocol_fee;
 
-    let cpi_accounts = token::Transfer {
+    let cpi_accounts: token::Transfer<'_> = token::Transfer {
         from: ctx.accounts.signer_ata_in.to_account_info(),
         to: ctx.accounts.treasury_ata_in.to_account_info(),
         authority: ctx.accounts.signer.to_account_info(),
@@ -83,10 +88,10 @@ pub fn swap(
 
     token::transfer(CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts), amount_in)?;
     
-    let seeds = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
-    let signer_seeds = &[&seeds[..]];
+    let seeds: &[&[u8]; 3] = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
+    let signer_seeds: &[&[&[u8]]; 1] = &[&seeds[..]];
 
-    let cpi_accounts = token::Transfer {
+    let cpi_accounts: token::Transfer<'_> = token::Transfer {
         from: ctx.accounts.treasury_ata_out.to_account_info(),
         to: ctx.accounts.signer_ata_out.to_account_info(), 
         authority: ctx.accounts.treasury_pda.to_account_info()
@@ -100,12 +105,12 @@ pub fn swap(
         after_fee)?;
     
     if partner_fee > 0 {
-        let partner_fee_account = ctx.accounts.partner_fee_ata.as_ref().ok_or(TyrbineError::MissingSPLAccount)?;
+        let partner_fee_account: &AccountInfo<'_> = ctx.accounts.partner_fee_ata.as_ref().ok_or(TyrbineError::MissingSPLAccount)?;
 
-        let seeds = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
-        let signer_seeds = &[&seeds[..]];
+        let seeds: &[&[u8]; 3] = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
+        let signer_seeds: &[&[&[u8]]; 1] = &[&seeds[..]];
     
-        let cpi_accounts = token::Transfer {
+        let cpi_accounts: token::Transfer<'_> = token::Transfer {
             from: ctx.accounts.treasury_ata_out.to_account_info(),
             to: partner_fee_account.to_account_info(), 
             authority: ctx.accounts.treasury_pda.to_account_info()
