@@ -54,7 +54,7 @@ pub fn swap(
     let fee: (u64, u64) = fees_setting(&vault_in, &vault_out, ctx.accounts.treasury_pda.proto_fee);
     let swap_fee_bps = fee.0;
     let protocol_fee_bps = fee.1;
-    msg!("Fee: {}", swap_fee_bps + protocol_fee_bps);
+    msg!("Fee: {} bps", swap_fee_bps + protocol_fee_bps);
     
     let (after_fee, lp_fee, protocol_fee, partner_fee) = calculate_fee_amount(token_raw_amount_out, swap_fee_bps, protocol_fee_bps, partner_fee);
     
