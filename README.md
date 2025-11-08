@@ -9,7 +9,7 @@ Users can deposit a single asset into vaults and earn trading fees **without imp
 > The idea is to join the existing flow of liquidity on Solana and extract yield from it
 
 Key features include:  
-- **Phase Switch**
+- **Balancer**
 Incentivizes traders to rebalance liquidity by depositing into deficit vaults and withdrawing from surplus vaults, offering the best rates available across the Solana ecosystem.
 
 - **Slippage-Free Swaps**
