@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tyrbine {
 
-    use tyrbine_program::{components::{calculate_fee_amount, calculate_yield, fees_setting, raw_amount_out}, utils::SCALE};
+    use anchor_lang::prelude::Pubkey;
+    use tyrbine_program::{components::{calculate_fee_amount, calculate_yield, fees_setting, raw_amount_out}, states::Vault, utils::SCALE};
     
 
 #[test]
@@ -61,12 +62,12 @@ fn testing_raw_amount_out() {
 
 #[test]
 fn testing_fees_setting() {
-    let initial_liquidity: u64 = 1000000;
-    let current_liquidity: u64 = 1000000;
-    let base_fee_bps: u64 = 10;
-    let proto_fee_bps: u64 = 5;
+    let pubkey = Pubkey::default();
+    let vault_in = Vault {base_fee: 10, initial_liquidity: 1, current_liquidity: 1, is_active: true, token_mint: pubkey, pyth_price_account: pubkey, max_age_price: 300, lp_mint: pubkey, cumulative_yield_per_lp: 0, protocol_yield: 0};
+    let vault_out = Vault{ base_fee: 10, initial_liquidity: 1, current_liquidity: 1, is_active: true, token_mint: pubkey, pyth_price_account: pubkey, max_age_price: 300, lp_mint: pubkey, cumulative_yield_per_lp: 0, protocol_yield: 0};
+    let proto_fee_bps: u64 = 10;
 
-    let fees = fees_setting(initial_liquidity, current_liquidity, base_fee_bps, proto_fee_bps);
+    let fees = fees_setting(&vault_in, &vault_out, proto_fee_bps);
 
     println!("Swap fee: {:?}", fees.0);
     println!("Protocol fee: {:?}", fees.1);

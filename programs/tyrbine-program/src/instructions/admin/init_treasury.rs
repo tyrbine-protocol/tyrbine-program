@@ -13,7 +13,8 @@ pub fn init_treasury(
 
     ctx.accounts.treasury_pda.admin = ctx.accounts.signer.key();
     ctx.accounts.treasury_pda.stoptap = false;
-    // charged from the total fees. indicated in whole percentages (e.g. 1 = 10%)
+    // Charged from the total fees. Indicated in whole percentages (e.g. 10 = 10%)
+    // Minimum proto_fee = 10 when swap_fee_bps = 10 in vault. If proto_fee is lower, the protocol will not receive income. Increase swap_fee_bps > 100 and then you can set proto_fee < 10
     ctx.accounts.treasury_pda.proto_fee = proto_fee;
 
     Ok(())

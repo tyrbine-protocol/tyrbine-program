@@ -16,9 +16,6 @@ pub fn swap(
     let vault_in: &mut Account<'_, Vault> = &mut ctx.accounts.vault_pda_in;
     let vault_out: &mut Account<'_, Vault> = &mut ctx.accounts.vault_pda_out;
 
-    let delta_in: i64 = vault_in.current_liquidity as i64 - vault_in.initial_liquidity as i64;
-    let delta_out: i64 = vault_out.current_liquidity as i64 - vault_out.initial_liquidity as i64;
-
     if ctx.accounts.pyth_price_account_in.key() != vault_in.pyth_price_account {
         return Err(TyrbineError::InvalidPythAccount.into());
     }
@@ -54,14 +51,11 @@ pub fn swap(
 
     let token_raw_amount_out: u64 = raw_amount_out(amount_in, token_in_decimals, token_out_decimals, price_in, price_out)?;
 
-    let mut swap_fee_bps: u64 = vault_out.base_fee;
-    let mut protocol_fee_bps: u64 = ctx.accounts.treasury_pda.proto_fee;
-    if delta_in > delta_out {
-        let fee: (u64, u64) = fees_setting(vault_out.initial_liquidity, vault_out.current_liquidity, vault_out.base_fee, protocol_fee_bps);
-        swap_fee_bps = fee.0;
-        protocol_fee_bps = fee.1;
-        msg!("Increased Fee");
-    }
+    let fee: (u64, u64) = fees_setting(&vault_in, &vault_out, ctx.accounts.treasury_pda.proto_fee);
+    let swap_fee_bps = fee.0;
+    let protocol_fee_bps = fee.1;
+    msg!("Fee: {}", swap_fee_bps + protocol_fee_bps);
+    
     let (after_fee, lp_fee, protocol_fee, partner_fee) = calculate_fee_amount(token_raw_amount_out, swap_fee_bps, protocol_fee_bps, partner_fee);
     
     if vault_out.current_liquidity < (after_fee + lp_fee + protocol_fee + partner_fee) {

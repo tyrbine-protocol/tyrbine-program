@@ -29,7 +29,7 @@ pub struct UpdatePoolInstructionAccounts<'info> {
 
     pub pyth_price_account: Account<'info, PriceUpdateV2>,
 
-    #[account(mut, seeds = [VAULT_SEED.as_bytes(), &vault_mint.key().to_bytes()], bump)]
+    #[account(mut, seeds = [VAULT_SEED.as_bytes(), vault_mint.key().as_ref()], bump)]
     pub vault_pda: Account<'info, Vault>,
 
     #[account(mut, seeds = [TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes()], bump)]
