@@ -30,7 +30,7 @@ pub mod tyrbine_program {
         instructions::admin::init_vault(ctx, is_active, base_fee, max_age_price)
     }
 
-    pub fn update_vault(ctx: Context<UpdatePoolInstructionAccounts>, is_active: bool, base_fee: u64, max_age_price: u64) -> Result<()> {
+    pub fn update_vault(ctx: Context<UpdateVaultInstructionAccounts>, is_active: bool, base_fee: u64, max_age_price: u64) -> Result<()> {
         instructions::admin::update_vault(ctx, is_active, base_fee, max_age_price)
     }
 
