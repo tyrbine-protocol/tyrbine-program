@@ -1,14 +1,13 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
-use crate::{components::{calculate_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::{MINT_SEED, VAULT_SEED, STAKER_SEED, TREASURY_SEED, TYRBINE_SEED}};
+use crate::{components::{calculate_yield, check_stoptap}, events::ClaimEvent, states::{Staker, Treasury, Vault}, utils::{MINT_SEED, STAKER_SEED, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
 
 
 pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
 
     let cumulative_yield_per_lp = ctx.accounts.vault_pda.cumulative_yield_per_lp;
-    let total_lp = ctx.accounts.vault_pda.initial_liquidity;
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
     let staker_last_cumulative_yield = ctx.accounts.staker_pda.last_cumulative_yield;
     let staker_pending_claim = ctx.accounts.staker_pda.pending_claim;
@@ -16,7 +15,6 @@ pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
     let staker_yield = calculate_yield(cumulative_yield_per_lp, staker_lp, staker_last_cumulative_yield);
     let amount = staker_yield + ctx.accounts.staker_pda.pending_claim;
 
-    // Transfer [amount] to Signer
     let seeds = &[TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes(), &[ctx.bumps.treasury_pda]];
     let signer_seeds = &[&seeds[..]];
 
@@ -36,11 +34,17 @@ pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
     ctx.accounts.staker_pda.pending_claim = 0;
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield_per_lp;
 
-    msg!("Vault Cum Yield: {}", cumulative_yield_per_lp);
-    msg!("Vault Total LP: {}", total_lp);
-    msg!("Staker LP: {}", staker_lp);
-    msg!("Staker Last Cum Yield: {}", cumulative_yield_per_lp);
-    msg!("Staker Pending Claim: {}", staker_pending_claim);
+    let clock: Clock = Clock::get()?;
+    let current_timestamp: i64 = clock.unix_timestamp;
+
+    emit!(ClaimEvent {
+        staker: ctx.accounts.signer.key(),
+        token: ctx.accounts.vault_pda.token_mint.key(),
+        claimed_amount: amount,
+        last_cumulative_yield_per_token: cumulative_yield_per_lp,
+        pending_claim: staker_pending_claim,
+        timestamp: current_timestamp,
+    });
 
     Ok(())
 }

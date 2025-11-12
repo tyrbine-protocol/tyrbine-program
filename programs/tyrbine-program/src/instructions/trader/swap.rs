@@ -115,6 +115,8 @@ pub fn swap(
         amount_out: after_fee,
         price_in: price_in,
         price_out: price_out,
+        decimals_in: token_in_decimals,
+        decimals_out: token_out_decimals,
         lp_fee: lp_fee,
         protocol_fee: protocol_fee,
         partner_fee: partner_fee,
