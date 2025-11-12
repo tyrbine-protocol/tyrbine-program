@@ -10,6 +10,7 @@ pub mod states;
 pub mod instructions;
 pub mod components;
 pub mod utils;
+pub mod events;
 
 
 declare_id!("5EfEyaViE5MGrJWoZDFkhWgydwwt4tUQkoPyAEfK5ReV");

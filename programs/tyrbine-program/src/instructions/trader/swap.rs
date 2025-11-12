@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
-use crate::{components::{calculate_fee_amount, check_stoptap, fees_setting, raw_amount_out}, states::{Treasury, Vault}, utils::{TyrbineError, SCALE, TREASURY_SEED, TYRBINE_SEED, VAULT_SEED}};
+use crate::{components::{calculate_fee_amount, check_stoptap, fees_setting, raw_amount_out}, events::SwapEvent, states::{Treasury, Vault}, utils::{SCALE, TREASURY_SEED, TYRBINE_SEED, TyrbineError, VAULT_SEED}};
 
 pub fn swap(
     ctx: Context<SwapInstructionAccounts>,
@@ -43,9 +43,6 @@ pub fn swap(
         return Err(TyrbineError::OracleDataTooOld.into());
     }
 
-    msg!("Token In price: {}", price_in);
-    msg!("Token Out price: {}", price_out);
-
     let token_in_decimals: u8 = ctx.accounts.mint_in.decimals;
     let token_out_decimals: u8 = ctx.accounts.mint_out.decimals;
 
@@ -54,19 +51,12 @@ pub fn swap(
     let fee: (u64, u64) = fees_setting(&vault_in, &vault_out, ctx.accounts.treasury_pda.proto_fee);
     let swap_fee_bps = fee.0;
     let protocol_fee_bps = fee.1;
-    msg!("Fee: {} bps", swap_fee_bps + protocol_fee_bps);
     
     let (after_fee, lp_fee, protocol_fee, partner_fee) = calculate_fee_amount(token_raw_amount_out, swap_fee_bps, protocol_fee_bps, partner_fee);
     
     if vault_out.current_liquidity < (after_fee + lp_fee + protocol_fee + partner_fee) {
         return Err(TyrbineError::InsufficientLiquidity.into());
     }
-
-    msg!("Amount In: {}", amount_in);
-    msg!("Amount Out: {}", after_fee);
-    msg!("LP Fee: {}", lp_fee);
-    msg!("Protocol Fee: {}", protocol_fee);
-    msg!("Partner Fee: {}", partner_fee);
 
     vault_in.current_liquidity += amount_in;
     vault_out.current_liquidity -= after_fee;
@@ -117,6 +107,19 @@ pub fn swap(
                 signer_seeds), 
                 partner_fee)?;
     }
+
+    emit!(SwapEvent {
+        user: ctx.accounts.signer.key(),
+        fee_bps: swap_fee_bps + protocol_fee_bps,
+        amount_in: amount_in,
+        amount_out: after_fee,
+        price_in: price_in,
+        price_out: price_out,
+        lp_fee: lp_fee,
+        protocol_fee: protocol_fee,
+        partner_fee: partner_fee,
+        timestamp: current_timestamp,
+    });
 
     Ok(())
 }
