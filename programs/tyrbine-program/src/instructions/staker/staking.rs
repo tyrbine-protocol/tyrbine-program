@@ -1,14 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, MintTo, Token, TokenAccount}};
-use crate::{components::{calculate_yield, check_stoptap}, events::StakingEvent, states::{Staker, Treasury, Vault}, utils::*};
+use crate::{components::{calculate_yield, check_stoptap}, states::{Staker, Treasury, Vault}, utils::*};
 
 #[inline(never)]
 pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<()> {
 
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
-
-    let clock: Clock = Clock::get()?;
-    let current_timestamp: i64 = clock.unix_timestamp;
 
     let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield_per_lp;
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
@@ -47,12 +44,7 @@ pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<
     ctx.accounts.vault_pda.initial_liquidity += amount;
     ctx.accounts.vault_pda.current_liquidity += amount;
 
-    emit!(StakingEvent {
-        staker: ctx.accounts.signer.key(),
-        token: ctx.accounts.vault_pda.token_mint.key(),
-        staking_amount: amount,
-        timestamp: current_timestamp,
-    });
+    msg!("Staking {{staker: \"{}\", mint: \"{}\", amount: \"{}\"}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
 
     Ok(())
 }
