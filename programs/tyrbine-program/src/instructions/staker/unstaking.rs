@@ -1,26 +1,20 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{self, burn, Burn, Mint, Token, TokenAccount, Transfer}};
-use crate::{components::{calculate_yield, check_stoptap}, states::{Vault, Staker, Treasury}, utils::*};
+use crate::{components::{calculate_yield, check_stoptap}, events::UnstakingEvent, states::{Staker, Treasury, Vault}, utils::*};
 
 #[inline(never)]
 pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Result<()> {
 
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
 
+    let clock: Clock = Clock::get()?;
+    let current_timestamp: i64 = clock.unix_timestamp;
+
     let cumulative_yield = ctx.accounts.vault_pda.cumulative_yield_per_lp;
-    let total_lp = ctx.accounts.vault_pda.initial_liquidity;
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
     let last_cumulative_yield = ctx.accounts.staker_pda.last_cumulative_yield;
-    let pending_claim = ctx.accounts.staker_pda.pending_claim;
-    
-    msg!("Vault Cum Yield: {}", cumulative_yield);
-    msg!("Vault Total LP: {}", total_lp);
-    msg!("Staker LP: {}", staker_lp);
-    msg!("Staker Last Cum Yield: {}", last_cumulative_yield);
-    msg!("Staker Pending Claim Before: {}", pending_claim);
 
     ctx.accounts.staker_pda.pending_claim += calculate_yield(cumulative_yield, staker_lp, last_cumulative_yield);
-    msg!("Staker Pending Claim After: {}", ctx.accounts.staker_pda.pending_claim);
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield;
     
     let cpi_accounts = Burn {
@@ -53,6 +47,13 @@ pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Res
 
     ctx.accounts.vault_pda.initial_liquidity -= amount;
     ctx.accounts.vault_pda.current_liquidity -= amount;
+
+    emit!(UnstakingEvent {
+        staker: ctx.accounts.signer.key(),
+        token: ctx.accounts.vault_pda.token_mint.key(),
+        unstaking_amount: amount,
+        timestamp: current_timestamp,
+    });
 
     Ok(())
 }

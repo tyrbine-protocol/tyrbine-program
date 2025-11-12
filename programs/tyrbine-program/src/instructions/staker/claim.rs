@@ -7,6 +7,9 @@ use crate::{components::{calculate_yield, check_stoptap}, events::ClaimEvent, st
 pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
     check_stoptap(&ctx.accounts.vault_pda, &ctx.accounts.treasury_pda)?;
 
+    let clock: Clock = Clock::get()?;
+    let current_timestamp: i64 = clock.unix_timestamp;
+
     let cumulative_yield_per_lp = ctx.accounts.vault_pda.cumulative_yield_per_lp;
     let staker_lp = ctx.accounts.signer_lp_ata.amount;
     let staker_last_cumulative_yield = ctx.accounts.staker_pda.last_cumulative_yield;
@@ -33,9 +36,6 @@ pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
 
     ctx.accounts.staker_pda.pending_claim = 0;
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield_per_lp;
-
-    let clock: Clock = Clock::get()?;
-    let current_timestamp: i64 = clock.unix_timestamp;
 
     emit!(ClaimEvent {
         staker: ctx.accounts.signer.key(),
