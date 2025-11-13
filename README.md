@@ -1,9 +1,6 @@
 ![Solana](https://img.shields.io/badge/Blockchain-Solana-blue.svg)
-
-## 📄 License
-
 ![License](https://img.shields.io/badge/License-MIT-green.svg)  
-This project is licensed under the [MIT License](LICENSE).
+![GitHub stars](https://img.shields.io/github/stars/tyrbine‑protocol/tyrbine‑program?style=social)
 
 
 # Tyrbine
