@@ -111,6 +111,8 @@ pub fn swap(
     emit!(SwapEvent {
         user: ctx.accounts.signer.key(),
         fee_bps: swap_fee_bps + protocol_fee_bps,
+        token_in: vault_in.token_mint,
+        token_out: vault_out.token_mint,
         amount_in: amount_in,
         amount_out: after_fee,
         price_in: price_in,
