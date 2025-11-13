@@ -46,6 +46,17 @@ Tyrbine allows you to earn from the growing Solana ecosystem **with a single ass
 
 ---
 
+## 🛠 Developer Integration
+
+Tyrbine Protocol exposes **4 Solana instructions** that can be called to interact with vaults and manage liquidity.  
+
+### Available Instructions
+
+1. **Staking** – deposit a token into a vault  [How to call it?](https://github.com/tyrbine-protocol/programs/tyrbine-program/src/instructions/staker/staking.rs)
+2. **Unstaking** – withdraw from a vault  [How to call it?](https://github.com/tyrbine-protocol/programs/tyrbine-program/src/instructions/staker/unstaking.rs)
+3. **Claim** – claim earned fees  [How to call it?](https://github.com/tyrbine-protocol/programs/tyrbine-program/src/instructions/staker/claim.rs)
+4. **Swap** – swap between vaults  [How to call it?](https://github.com/tyrbine-protocol/programs/tyrbine-program/src/instructions/trader/swap.rs)
+
 ## Learn More
 
 - [Whitepaper](https://xjx4fw67d3oyxf3nghsgyus2thdtexb26qrqpegmu5cbmxkkf7qa.arweave.net/um_C298e3YuXbTHkbFJamccyXDr0IweQzKdEFl1KL-A)
