@@ -1,5 +1,5 @@
 ![Solana](https://img.shields.io/badge/Blockchain-Solana-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)  
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![GitHub stars](https://img.shields.io/github/stars/tyrbine-protocol/tyrbine-program?style=social)
 
 
