@@ -53,9 +53,9 @@ Tyrbine Protocol exposes **4 Solana instructions** that can be called to interac
 ### Available Instructions
 
 1. **Staking** – deposit a token into a vault - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/staker/staking.rs#L53)
-2. **Unstaking** – withdraw from a vault - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/97d127a347140b2804a41a0f732e26a3e49ae907/programs/tyrbine-program/src/instructions/staker/unstaking.rs#L54)
-3. **Claim** – claim earned fees - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/97d127a347140b2804a41a0f732e26a3e49ae907/programs/tyrbine-program/src/instructions/staker/claim.rs#L43)
-4. **Swap** – swap between vaults - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/97d127a347140b2804a41a0f732e26a3e49ae907/programs/tyrbine-program/src/instructions/trader/swap.rs#L130)
+2. **Unstaking** – withdraw from a vault - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/staker/unstaking.rs#L54)
+3. **Claim** – claim earned fees - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/staker/claim.rs#L43)
+4. **Swap** – swap between vaults - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/trader/swap.rs#L130)
 
 ## Learn More
 
