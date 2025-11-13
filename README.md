@@ -34,9 +34,10 @@ Tyrbine allows you to earn from the growing Solana ecosystem **with a single ass
 
 ## Getting Started
 
-1. Connect your Solana wallet.
-2. Select a vault.
-3. Deposit your token and start earning fees.
+1. Go to [tyrbine.com](https://tyrbine.com)
+2. Connect your Solana wallet.
+3. Select a vault.
+4. Deposit your token and start earning fees.
 
 ---
 
