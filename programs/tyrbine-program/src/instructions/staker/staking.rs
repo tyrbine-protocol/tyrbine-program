@@ -44,7 +44,7 @@ pub fn staking(ctx: Context<StakingInstructionAccounts>, amount: u64) -> Result<
     ctx.accounts.vault_pda.initial_liquidity += amount;
     ctx.accounts.vault_pda.current_liquidity += amount;
 
-    msg!("Staking {{staker: \"{}\", mint: \"{}\", amount: \"{}\"}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
+    msg!("Staking {{staker: {}, mint: {}, amount: {}}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
 
     Ok(())
 }

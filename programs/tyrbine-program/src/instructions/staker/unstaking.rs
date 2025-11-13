@@ -45,7 +45,7 @@ pub fn unstaking(ctx: Context<UnstakingInstructionAccounts>, amount: u64) -> Res
     ctx.accounts.vault_pda.initial_liquidity -= amount;
     ctx.accounts.vault_pda.current_liquidity -= amount;
 
-    msg!("Unstaking {{staker: \"{}\", mint: \"{}\", amount: \"{}\"}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
+    msg!("Unstaking {{staker: {}, mint: {}, amount: {}}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
 
     Ok(())
 }

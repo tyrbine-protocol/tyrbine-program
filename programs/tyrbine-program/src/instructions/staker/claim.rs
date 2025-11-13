@@ -34,7 +34,7 @@ pub fn claim(ctx: Context<ClaimInstructionAccounts>) -> Result<()> {
     ctx.accounts.staker_pda.last_cumulative_yield = cumulative_yield_per_lp;
     ctx.accounts.staker_pda.pending_claim = 0;
     
-    msg!("Claim {{staker: \"{}\", mint: \"{}\", amount: \"{}\"}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
+    msg!("Claim {{staker: {}, mint: {}, amount: {}}}", ctx.accounts.signer.key(), ctx.accounts.vault_pda.token_mint.key(), amount);
 
     Ok(())
 }
