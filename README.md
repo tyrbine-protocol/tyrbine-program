@@ -52,7 +52,63 @@ Tyrbine Protocol exposes **4 Solana instructions** that can be called to interac
 
 ### Available Instructions
 
-1. **Staking** – deposit a token into a vault - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/staker/staking.rs#L53)
+1. **Staking** – deposit a token into a vault
+```rust
+pub struct StakingInstructionAccounts<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(mut)]
+    pub vault_mint: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        seeds = [MINT_SEED.as_bytes(), vault_pda.key().as_ref()], 
+        bump,
+        mint::authority = treasury_pda.key(),
+        mint::freeze_authority = treasury_pda.key()
+    )]
+    pub lp_mint: Account<'info, Mint>,
+
+    #[account(mut, token::authority = signer, token::mint = vault_mint)]
+    pub signer_ata: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = signer,
+        associated_token::mint = lp_mint,
+        associated_token::authority = signer,
+    )]
+    pub signer_lp_ata: Account<'info, TokenAccount>,
+
+    #[account(mut, seeds = [VAULT_SEED.as_bytes(), &vault_mint.to_account_info().key.to_bytes()], bump)]
+    pub vault_pda: Account<'info, Vault>,
+
+    #[account(
+        init_if_needed,
+        payer = signer,
+        seeds = [STAKER_SEED.as_bytes(), vault_pda.key().as_ref(), signer.key().as_ref()],
+        bump,
+        space = 8 + 32 + 32 + 16 + 8,
+    )]
+    pub staker_pda: Account<'info, Staker>,
+
+    #[account(mut, seeds = [TYRBINE_SEED.as_bytes(), TREASURY_SEED.as_bytes()], bump)]
+    pub treasury_pda: Account<'info, Treasury>,
+
+    #[account(
+        init_if_needed,
+        payer = signer,
+        associated_token::mint = vault_mint,
+        associated_token::authority = treasury_pda,
+    )]
+    pub treasury_ata: Account<'info, TokenAccount>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+```
 2. **Unstaking** – withdraw from a vault - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/staker/unstaking.rs#L54)
 3. **Claim** – claim earned fees - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/staker/claim.rs#L43)
 4. **Swap** – swap between vaults - [How to call it?](https://github.com/tyrbine-protocol/tyrbine-program/blob/main/programs/tyrbine-program/src/instructions/trader/swap.rs#L130)
