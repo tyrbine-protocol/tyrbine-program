@@ -1,3 +1,11 @@
+![Solana](https://img.shields.io/badge/Blockchain-Solana-blue.svg)
+
+## 📄 License
+
+![License](https://img.shields.io/badge/License-MIT-green.svg)  
+This project is licensed under the [MIT License](LICENSE).
+
+
 # Tyrbine
 Single-sided liquidity protocol on Solana
 
